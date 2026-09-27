@@ -1,0 +1,68 @@
+import { Product } from "@/lib/types";
+
+export const seedProducts: Omit<Product, "id" | "created_at" | "updated_at">[] = [
+  {
+    name: "Strawberry Blast",
+    icon: "🍓",
+    description: "Fresh strawberry juice with a hint of mint",
+    price_s: 3.5,
+    price_m: 4.5,
+    price_l: 5.5,
+  },
+  {
+    name: "Mango Magic",
+    icon: "🥭",
+    description: "Tropical mango bliss, perfectly sweet",
+    price_s: 4.0,
+    price_m: 5.0,
+    price_l: 6.0,
+  },
+  {
+    name: "Orange Sunrise",
+    icon: "🍊",
+    description: "Classic fresh-squeezed orange juice",
+    price_s: 3.0,
+    price_m: 4.0,
+    price_l: 5.0,
+  },
+  {
+    name: "Mint Green Detox",
+    icon: "🥗",
+    description: "Cool mint cucumber juice for a healthy glow",
+    price_s: 4.5,
+    price_m: 5.5,
+    price_l: 6.5,
+  },
+  {
+    name: "Pineapple Coconut",
+    icon: "🍍",
+    description: "Tropical blend of pineapple and coconut",
+    price_s: 4.5,
+    price_m: 5.5,
+    price_l: 6.5,
+  },
+  {
+    name: "Watermelon Cooler",
+    icon: "🍉",
+    description: "Refreshing watermelon juice, perfect for summer",
+    price_s: 3.5,
+    price_m: 4.5,
+    price_l: 5.5,
+  },
+  {
+    name: "Blueberry Burst",
+    icon: "🔵",
+    description: "Antioxidant-rich blueberry juice",
+    price_s: 5.0,
+    price_m: 6.0,
+    price_l: 7.0,
+  },
+  {
+    name: "Lemon Mint Spark",
+    icon: "🍋",
+    description: "Zesty lemon with fresh mint leaves",
+    price_s: 3.5,
+    price_m: 4.5,
+    price_l: 5.5,
+  },
+];

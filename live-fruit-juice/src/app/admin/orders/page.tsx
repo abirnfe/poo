@@ -1,38 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { useOrders } from "@/hooks/useOrders";
 import { OrderList } from "@/components/OrderList";
-import { useState } from "react";
 import { useToast } from "@/hooks/useToast";
 
 export default function AdminOrdersPage() {
-  const { orders, loading, setOrders } = useOrders();
-  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const { orders, loading, markComplete } = useOrders();
+  const [completingOrderId, setCompletingOrderId] = useState<string | null>(null);
   const { ToastContainer, showToast } = useToast();
+
+  const handleMarkComplete = async (orderId: string) => {
+    setCompletingOrderId(orderId);
+    await markComplete(orderId);
+    showToast("Order marked as complete");
+    setCompletingOrderId(null);
+  };
 
   const pendingOrders = orders.filter((o) => o.status === "pending");
   const completedOrders = orders.filter((o) => o.status === "completed");
-
-  const handleMarkComplete = async (orderId: string) => {
-    setUpdatingOrderId(orderId);
-
-    const response = await fetch(`/api/orders/${orderId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "completed" }),
-    });
-
-    if (response.ok) {
-      const { data } = await response.json();
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, ...data } : o))
-      );
-      showToast("Order marked as complete");
-    } else {
-      showToast("Failed to update order");
-    }
-    setUpdatingOrderId(null);
-  };
 
   return (
     <div>
@@ -62,7 +48,7 @@ export default function AdminOrdersPage() {
               <OrderList
                 orders={pendingOrders}
                 onMarkComplete={handleMarkComplete}
-                isUpdating={updatingOrderId !== null}
+                isUpdating={completingOrderId !== null}
               />
             </div>
           )}
@@ -75,7 +61,7 @@ export default function AdminOrdersPage() {
               <OrderList
                 orders={completedOrders}
                 onMarkComplete={handleMarkComplete}
-                isUpdating={updatingOrderId !== null}
+                isUpdating={completingOrderId !== null}
               />
             </div>
           )}

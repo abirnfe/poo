@@ -1,90 +1,81 @@
 # Live Fruit Juice
 
-A full-stack juice shop web app built with Next.js 16 (App Router), Tailwind CSS, and Supabase. Deploy to Vercel in seconds.
+A full-stack juice shop web app built with Next.js 16 (App Router), Tailwind CSS 4, and Vercel KV (Redis). Deploy to Vercel with zero external database setup.
 
 ## Features
 
 - **Customer-facing storefront** — browse juice products, select sizes (S/M/L), add to cart, and place orders
 - **Admin panel** — password-protected dashboard to manage products and view/manage orders
-- **Real-time updates** — products and orders sync instantly between admin and customer via Supabase Realtime
+- **Live data sync** — products and orders sync via 3-second polling
 - **Fully responsive** — works on mobile and desktop
 - **Vibrant fruit-themed UI** — orange, mango yellow, strawberry red, and mint green
+- **Vercel-native** — uses Vercel KV for storage (no external database account needed)
+- **Runs with zero config** — seed data loads automatically even without KV
 
 ## Tech Stack
 
 | Category | Technology |
 |----------|-----------|
-| Framework | Next.js 16 (App Router) |
+| Framework | Next.js 16 (App Router, Turbopack) |
 | Styling | Tailwind CSS 4 |
-| Database | Supabase (PostgreSQL) |
-| Realtime | Supabase Realtime (WebSocket) |
+| Storage | Vercel KV (Redis) — falls back to seed data + in-memory |
 | Auth | Cookie-based password gate |
-| Deployment | Vercel |
+| Realtime | Polling (3-second interval) |
+| Deployment | Vercel (auto-detected, no config needed) |
 
 ## Quick Start
 
-### 1. Set up Supabase
-
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Get your project URL and anon key from **Project Settings > API**
-3. In the SQL Editor, run the migration from `supabase/migrations/20240101000000_init.sql`
-
-### 2. Configure Environment Variables
-
-Copy `.env.example` to `.env.local`:
-
-```bash
-cp .env.example .env.local
-```
-
-Fill in your Supabase credentials:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-ADMIN_PASSWORD=your-admin-password  # default: Abir1050@@
-```
-
-### 3. Run Locally
+### Local Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the storefront, and [http://localhost:3000/login](http://localhost:3000/login) for the admin panel.
+Open [http://localhost:3000](http://localhost:3000) to see the storefront.
 
-### 4. Deploy to Vercel
+The app works out of the box with seed data — no external database required. For persistent storage, create a Vercel KV database (see below).
+
+### Production Deployment (Vercel)
 
 1. Push this repository to GitHub
 2. Import the project in [Vercel](https://vercel.com/new)
-3. In **Project Settings > Environment Variables**, add:
+3. Vercel auto-detects Next.js — no `vercel.json` needed
+4. In **Project Settings > Environment Variables**, set:
 
-| Name | Value |
-|------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon key |
-| `ADMIN_PASSWORD` | Your chosen admin password |
+| Name | Required | Value |
+|------|----------|-------|
+| `ADMIN_PASSWORD` | Yes | Your chosen admin password (default: `Abir1050@@`) |
+| `KV_REST_API_URL` | No* | Auto-set when you create a KV database |
+| `KV_REST_API_TOKEN` | No* | Auto-set when you create a KV database |
 
-4. Click **Deploy** — Vercel will auto-detect Next.js and deploy
+\* Without KV, the app uses seed data + in-memory storage (resets on function restart). For persistent orders, create a KV database:
+
+1. In Vercel dashboard → **Storage** → **Create Database** → **KV**
+2. Link the KV database to your project
+3. Vercel automatically injects `KV_REST_API_URL` and `KV_REST_API_TOKEN`
 
 ## Project Structure
 
 ```
 live-fruit-juice/
-├── public/                     # Static assets
+├── .env.example              # Environment variables
+├── AGENTS.md                 # Agent commands
+├── README.md                 # This file
+├── next.config.ts            # Next.js config
+├── package.json              # Dependencies + scripts
+├── postcss.config.mjs        # PostCSS config
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx          # Root layout (HTML, body, global styles)
-│   │   ├── globals.css         # Tailwind + fruit-themed CSS variables
+│   │   ├── globals.css          # Tailwind + fruit-themed CSS variables
 │   │   ├── page.tsx            # Customer home page (product grid + cart)
+│   │   ├── login/page.tsx       # Admin login page
 │   │   ├── admin/
-│   │   │   ├── layout.tsx      # Admin layout (auth check + header + content)
+│   │   │   ├── layout.tsx      # Protected layout (auth check + AdminHeader)
 │   │   │   ├── page.tsx        # Redirects to /admin/orders
 │   │   │   ├── products/page.tsx  # Product CRUD management
-│   │   │   └── orders/page.tsx    # Order management dashboard
-│   │   ├── login/
-│   │   │   └── page.tsx        # Login page (password gate)
+│   │   │   └── orders/page.tsx   # Order management dashboard
 │   │   ├── api/
 │   │   │   ├── products/
 │   │   │   │   ├── route.ts       # GET (list), POST (create)
@@ -94,37 +85,31 @@ live-fruit-juice/
 │   │   │   │   └── [id]/route.ts   # PATCH (update status)
 │   │   │   └── admin/login/route.ts  # POST (verify password, set cookie)
 │   ├── components/
-│   │   ├── Header.tsx          # Site header with cart button
-│   │   ├── ProductCard.tsx     # Product card with size selection
-│   │   ├── Cart.tsx            # Cart sidebar with checkout
-│   │   ├── AdminProductForm.tsx  # Product add/edit form
-│   │   ├── OrderList.tsx       # Order list for admin
-│   │   ├── AdminHeader.tsx     # Admin navigation header
+│   │   ├── Header.tsx           # Site header with cart button
+│   │   ├── ProductCard.tsx      # Product card with size selection
+│   │   ├── Cart.tsx             # Cart sidebar with checkout
+│   │   ├── AdminProductForm.tsx # Product add/edit form
+│   │   ├── OrderList.tsx        # Order list for admin
+│   │   ├── AdminHeader.tsx      # Admin navigation header
 │   │   └── ui/
-│   │       ├── Button.tsx      # Reusable button with variants
-│   │       ├── Badge.tsx       # Status badge component
-│   │       └── Modal.tsx       # Reusable modal dialog
+│   │       ├── Button.tsx       # Reusable button with variants
+│   │       ├── Badge.tsx        # Status badge component
+│   │       └── Modal.tsx        # Reusable modal dialog
 │   ├── hooks/
-│   │   ├── useProducts.ts      # Products with realtime subscription
-│   │   ├── useOrders.ts        # Orders with realtime subscription
-│   │   └── useToast.ts         # Toast notification hook
+│   │   ├── useProducts.ts       # Products with 3s polling
+│   │   ├── useOrders.ts         # Orders with 3s polling
+│   │   └── useToast.tsx         # Toast notification hook
 │   ├── lib/
-│   │   ├── types.ts            # TypeScript type definitions
-│   │   ├── auth.ts             # Admin auth helpers
-│   │   └── supabase/
-│   │       ├── server.ts       # Server-side Supabase client
-│   │       └── client.ts       # Browser-side Supabase client
-│   └── middleware.ts           # Auth middleware for /admin routes
-├── supabase/
-│   └── migrations/
-│       └── 20240101000000_init.sql  # Database schema
-├── supabase/types/
-│   └── database.ts            # Generated TypeScript types (optional)
-├── .env.example
-├── next.config.ts
-├── package.json
-├── tailwind.config.js
-└── vercel.json
+│   │   ├── types.ts             # TypeScript type definitions
+│   │   ├── auth.ts              # Admin auth helpers (cookie-based)
+│   │   ├── kv.ts                # Vercel KV client
+│   │   ├── seed.ts              # Initial product seed data
+│   │   └── data/
+│   │       ├── products.ts      # Product CRUD (KV + in-memory fallback)
+│   │       └── orders.ts        # Order CRUD (KV + in-memory fallback)
+│   └── middleware.ts           # N/A (removed - using server-side layout auth)
+├── public/                     # Static assets
+└── supabase/                   # (removed - using Vercel KV)
 ```
 
 ## Usage
@@ -142,17 +127,18 @@ live-fruit-juice/
 ### Admin Flow
 
 1. Navigate to `/login`
-2. Enter the admin password
-3. **Orders tab** — view live incoming orders, mark as complete
+2. Enter the admin password (`Abir1050@@` by default)
+3. **Orders tab** — view live orders (auto-refreshes every 3s), mark as complete
 4. **Products tab** — add, edit, or delete juice products
 
-## Real-time Data Flow
+## Data Flow
 
-| Action | Trigger | Update |
-|--------|---------|--------|
-| Admin adds/edits/deletes product | Supabase Realtime | Customer home page updates instantly |
-| Customer places order | Supabase Realtime | Admin orders page updates instantly |
-| Admin marks order complete | Supabase Realtime | Order status updates instantly on all views |
+| Action | Mechanism | Update Latency |
+|--------|-----------|----------------|
+| Admin adds/edits/deletes product | 3s polling | ≤3 seconds |
+| Customer places order | 3s polling | ≤3 seconds |
+| Admin marks order complete | 3s polling | ≤3 seconds |
+| Order status | Stored in `orders:all` key | Persistent |
 
 ## License
 

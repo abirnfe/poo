@@ -1,35 +1,32 @@
-import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { getAllOrders, createOrder } from "@/lib/data/orders";
 
 export async function GET() {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  try {
+    const orders = await getAllOrders();
+    return NextResponse.json({ data: orders });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to fetch orders" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ data });
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const body = await request.json();
+  try {
+    const body = await request.json();
+    const order = await createOrder({
+      items: body.items,
+      note: body.note || null,
+      customer_name: body.customer_name || null,
+    });
 
-  const { data, error } = await supabase.from("orders").insert({
-    items: body.items,
-    note: body.note || null,
-    customer_name: body.customer_name || null,
-    status: "pending",
-  });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ data: order }, { status: 201 });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to create order" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ data: data?.[0] ?? null }, { status: 201 });
 }

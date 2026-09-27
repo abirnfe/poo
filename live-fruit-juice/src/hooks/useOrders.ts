@@ -1,6 +1,5 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
 import { Order } from "@/lib/types";
 import { useEffect, useState } from "react";
 
@@ -8,49 +7,44 @@ export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const supabase = createClient();
-
-    fetch("/api/orders")
-      .then((res) => res.json())
-      .then(({ data }) => {
-        if (data) setOrders(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching orders:", err);
-        setLoading(false);
+  const markComplete = async (orderId: string) => {
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "completed" }),
       });
-
-    const channel = supabase
-      .channel("public:orders")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders" },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setOrders((prev) => [payload.new as Order, ...prev]);
-          } else if (payload.eventType === "UPDATE") {
-            setOrders((prev) =>
-              prev.map((o) =>
-                o.id === (payload.new as Order).id
-                  ? (payload.new as Order)
-                  : o
-              )
-            );
-          } else if (payload.eventType === "DELETE") {
-            setOrders((prev) =>
-              prev.filter((o) => o.id !== (payload.old as Order).id)
-            );
-          }
+      if (res.ok) {
+        const { data } = await res.json();
+        if (data) {
+          setOrders((prev) =>
+            prev.map((o) => (o.id === orderId ? { ...o, ...data } : o))
+          );
         }
-      )
-      .subscribe();
+      }
+    } catch (err) {
+      console.error("Error updating order:", err);
+    }
+  };
 
-    return () => {
-      supabase.removeChannel(channel);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch("/api/orders");
+        const { data } = await res.json();
+        if (data) setOrders(data);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      }
+      setLoading(false);
     };
+
+    fetchOrders();
+
+    const interval = setInterval(fetchOrders, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  return { orders, loading, setOrders };
+  return { orders, loading, markComplete };
 }

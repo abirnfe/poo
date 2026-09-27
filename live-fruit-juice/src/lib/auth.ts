@@ -16,7 +16,7 @@ export async function isAdminAuthenticated(): Promise<boolean> {
 export async function requireAdmin(): Promise<true> {
   const authenticated = await isAdminAuthenticated();
   if (!authenticated) {
-    redirect("/admin/login");
+    redirect("/login");
   }
   return true;
 }

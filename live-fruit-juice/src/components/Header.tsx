@@ -31,7 +31,7 @@ export function Header({ cartItemCount = 0, onCartClick }: HeaderProps) {
             )}
           </button>
           <Link
-            href="/admin/login"
+            href="/login"
             className="hidden text-sm font-medium text-gray-600 hover:text-orange md:block"
           >
             Admin

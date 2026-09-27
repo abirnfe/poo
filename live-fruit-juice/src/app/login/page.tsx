@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 
-export default function AdminLoginPage() {
+export default function LoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange/20 via-mango/20 to-mint/20">
       <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
         <div className="text-center mb-6">
-          <span className="text-5xl mb-2">🔐</span>
+          <span className="text-5xl mb-2 block">🔐</span>
           <h1 className="text-2xl font-bold text-orange">Admin Access</h1>
           <p className="text-sm text-gray-500 mt-2">
             Enter password to manage products and orders
@@ -57,9 +57,7 @@ export default function AdminLoginPage() {
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
           <Button
             variant="primary"

@@ -52,7 +52,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the storefront, and [http://localhost:3000/admin/login](http://localhost:3000/admin/login) for the admin panel.
+Open [http://localhost:3000](http://localhost:3000) to see the storefront, and [http://localhost:3000/login](http://localhost:3000/login) for the admin panel.
 
 ### 4. Deploy to Vercel
 
@@ -79,11 +79,12 @@ live-fruit-juice/
 │   │   ├── globals.css         # Tailwind + fruit-themed CSS variables
 │   │   ├── page.tsx            # Customer home page (product grid + cart)
 │   │   ├── admin/
-│   │   │   ├── layout.tsx      # Admin layout (header + content wrapper)
-│   │   │   ├── login/page.tsx  # Admin login page
+│   │   │   ├── layout.tsx      # Admin layout (auth check + header + content)
 │   │   │   ├── page.tsx        # Redirects to /admin/orders
 │   │   │   ├── products/page.tsx  # Product CRUD management
 │   │   │   └── orders/page.tsx    # Order management dashboard
+│   │   ├── login/
+│   │   │   └── page.tsx        # Login page (password gate)
 │   │   ├── api/
 │   │   │   ├── products/
 │   │   │   │   ├── route.ts       # GET (list), POST (create)
@@ -140,7 +141,7 @@ live-fruit-juice/
 
 ### Admin Flow
 
-1. Navigate to `/admin/login`
+1. Navigate to `/login`
 2. Enter the admin password
 3. **Orders tab** — view live incoming orders, mark as complete
 4. **Products tab** — add, edit, or delete juice products

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 interface AdminNavItem {
   label: string;
@@ -13,12 +12,6 @@ const navItems: AdminNavItem[] = [
 ];
 
 export function AdminHeader() {
-  const pathname = usePathname();
-
-  if (pathname === "/admin/login") {
-    return null;
-  }
-
   return (
     <header className="sticky top-0 z-40 bg-gradient-to-r from-orange to-strawberry text-white shadow-lg">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 py-3">
@@ -32,14 +25,7 @@ export function AdminHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className={`
-                flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all
-                ${
-                  pathname === item.href
-                    ? "bg-white text-orange"
-                    : "hover:bg-white/20"
-                }
-              `}
+              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all hover:bg-white/20"
             >
               <span>{item.icon}</span>
               {item.label}
